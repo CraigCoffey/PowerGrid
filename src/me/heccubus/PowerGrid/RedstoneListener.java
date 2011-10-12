@@ -9,6 +9,7 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 public class RedstoneListener extends BlockListener {
 
 	Logger log = Logger.getLogger("Minecraft");
+	private int GridBlockID = 22;
 	
 	public static PowerGrid plugin;
 
@@ -26,8 +27,10 @@ public class RedstoneListener extends BlockListener {
 		BlockFace bFaces[] = BlockFace.values();
 		BlockFace bFace = null;
 
+		GridBlockID = PowerGrid.CONFIG.getInt("GridBlockID",22);
+		
 		// If the block UNDER the powered block is of the correct type...
-		if (uTargetID == 22) {
+		if (uTargetID == GridBlockID) {
 			// ...check all directions (NORTH, SOUTH, EAST and WEST)...
 			for (int i=0; i<=3; i++) {
 				bFace = bFaces[i];
@@ -36,7 +39,7 @@ public class RedstoneListener extends BlockListener {
 
 				// ...for any blocks in those directions of the correct type, 
 				// call the toggleTorch method.
-				if (bTempID == 22) {
+				if (bTempID == GridBlockID) {
 					toggleTorch(bTemp, bTargetID);
 				}
 			}
@@ -74,7 +77,7 @@ public class RedstoneListener extends BlockListener {
 			// Only call recursively if the block in that direction is the appropriate type
 			// ...and the block ABOVE that block has not already been set to the target type
 			// (air or a powered redstone torch)
-			if (bTempID == 22 && bTemp.getRelative(BlockFace.UP).getTypeId() != bID) {
+			if (bTempID == GridBlockID && bTemp.getRelative(BlockFace.UP).getTypeId() != bID) {
 				toggleTorch(bTemp, bID); 
 			}
 		}
