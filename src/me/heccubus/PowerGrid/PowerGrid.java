@@ -19,10 +19,13 @@ public class PowerGrid extends JavaPlugin{
 		
 		CONFIG = getConfiguration();
 		CONFIG.load();
+		int GridBlockID = CONFIG.getInt("GridBlockID", -1);
+		if (GridBlockID == -1) {
+			CONFIG.setProperty("GridBlockID", 22);
+			CONFIG.save();
+		}
 
-        //PM For Listeners
         PluginManager pm = getServer().getPluginManager();
-        //Block Register
         pm.registerEvent(Event.Type.REDSTONE_CHANGE, redstonelistener, Event.Priority.Normal, this);
 	}
 	
