@@ -19,9 +19,11 @@ public class PowerGrid extends JavaPlugin{
 		
 		CONFIG = getConfiguration();
 		CONFIG.load();
-		int GridBlockID = CONFIG.getInt("GridBlockID", -1);
-		if (GridBlockID == -1) {
-			CONFIG.setProperty("GridBlockID", 22);
+		int GridOffBlockID = CONFIG.getInt("GridOffBlockID", -1);
+		if (GridOffBlockID == -1) {
+			CONFIG.setProperty("GridOffBlockID", 22);
+			CONFIG.setProperty("GridOnBlockID", 41);
+			CONFIG.setProperty("MaxGridSize", 1000);
 			CONFIG.save();
 		}
 

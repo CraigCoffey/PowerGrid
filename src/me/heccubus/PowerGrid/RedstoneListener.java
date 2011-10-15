@@ -3,13 +3,19 @@ package me.heccubus.PowerGrid;
 import java.util.logging.Logger;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 
 public class RedstoneListener extends BlockListener {
 
 	Logger log = Logger.getLogger("Minecraft");
-	private int GridBlockID = 22;
+	
+	private int maxDepth = -1;
+	private int currentDepth = 0;
+	
+	private int GridOffBlockID = -1;
+	private int GridOnBlockID = -1;
 	
 	public static PowerGrid plugin;
 
@@ -18,68 +24,86 @@ public class RedstoneListener extends BlockListener {
 	}
 
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
-		Block bTarget = event.getBlock();
-		int bTargetID = bTarget.getTypeId();
-		Block uTarget = bTarget.getRelative(BlockFace.DOWN);
-		int uTargetID = uTarget.getTypeId();
-		Block bTemp;
-		int bTempID = 0;
+		Block gridPowerBlock = event.getBlock();
+		int gridPowerBlockID = gridPowerBlock.getTypeId();		
+		Block gridBaseBlock = gridPowerBlock.getRelative(BlockFace.DOWN);
+		int gridBaseBlockID = gridBaseBlock.getTypeId();
+		int targetPowerBlockID = -1;
+		int targetBaseBlockID = -1;
+		currentDepth = 0;
+		
+		maxDepth = PowerGrid.CONFIG.getInt("MaxGridSize",1000);
+		GridOffBlockID = PowerGrid.CONFIG.getInt("GridOffBlockID",22);
+		GridOnBlockID = PowerGrid.CONFIG.getInt("GridOnBlockID",41);
+
+		if (gridPowerBlockID == 75) { targetPowerBlockID = 0; } else { targetPowerBlockID = 76; }
+
+		if (gridBaseBlockID == GridOffBlockID) { targetBaseBlockID = GridOnBlockID; }
+		if (gridBaseBlockID == GridOnBlockID) { targetBaseBlockID = GridOffBlockID; }
+		
+		if ((gridBaseBlockID == GridOffBlockID && gridPowerBlockID == 76) || (gridBaseBlockID == GridOnBlockID && gridPowerBlockID == 75)) {
+			toggleTorch(gridBaseBlock, targetBaseBlockID, targetPowerBlockID);
+		}
+	}
+
+	private void toggleTorch(Block tb, int gbbID, int gpbID) {
+		Block targetBaseBlock = tb;
+		int targetBaseBlockID = targetBaseBlock.getTypeId();
+		Block tempBlock = null;
+		int tempBlockID = -1;
 		BlockFace bFaces[] = BlockFace.values();
 		BlockFace bFace = null;
-
-		GridBlockID = PowerGrid.CONFIG.getInt("GridBlockID",22);
 		
-		// If the block UNDER the powered block is of the correct type...
-		if (uTargetID == GridBlockID) {
-			// ...check all directions (NORTH, SOUTH, EAST and WEST)...
-			for (int i=0; i<=3; i++) {
+		if (targetBaseBlockID != gbbID) {
+			targetBaseBlock.setTypeId(gbbID);
+			
+			for (int i=0; i<=4; i++) {
 				bFace = bFaces[i];
-				bTemp = uTarget.getRelative(bFace);
-				bTempID = bTemp.getTypeId();
-
-				// ...for any blocks in those directions of the correct type, 
-				// call the toggleTorch method.
-				if (bTempID == GridBlockID) {
-					toggleTorch(bTemp, bTargetID);
+				tempBlock = targetBaseBlock.getRelative(bFace);
+				tempBlockID = tempBlock.getTypeId();
+				
+				if (tempBlockID == 0 || tempBlockID == 75 || tempBlockID == 76) {					
+					if (!nearRedstoneWire(targetBaseBlock)) { tempBlock.setTypeId(gpbID); }
+					
+					tempBlockID = tempBlock.getTypeId();
+					
+					if (tempBlockID == 76) {
+						BlockState state = tempBlock.getState();
+						((org.bukkit.material.RedstoneTorch)state.getData()).setFacingDirection(bFace);
+						state.update();
+					}
+				}
+				
+			}
+			currentDepth++;
+		}
+		
+		for (int i=0; i<=5; i++) {
+			bFace = bFaces[i];
+			tempBlock = targetBaseBlock.getRelative(bFace);
+			tempBlockID = tempBlock.getTypeId();
+			
+			if ((tempBlockID == GridOffBlockID || tempBlockID == GridOnBlockID) && currentDepth <= maxDepth) {
+				if (tempBlockID != gbbID) {
+					toggleTorch(tempBlock, gbbID, gpbID); 
 				}
 			}
 		}
 	}
 
-	private void toggleTorch(Block tb, int tID) {
-		Block bTarget = tb;
-		Block bTemp;
-		int bTempID = 0;
+	private boolean nearRedstoneWire(Block b) {
+		Block tempBlock = null;
+		int tempBlockID = -1;
 		BlockFace bFaces[] = BlockFace.values();
 		BlockFace bFace = null;
 
-		// If a dead redstone torch ID is passed, use air instead
-		int bID = (tID == 75) ? 0 : tID;
-
-		// Get the block above the target block
-		bTemp = bTarget.getRelative(BlockFace.UP);
-		bTempID = bTemp.getTypeId();
-		
-		// Set it to the passed-in block type (air or a powered redstone torch) as long as
-		// it is not ALREADY the passed-in type, and it IS the OTHER type.  Ignore all other
-		// block and material types.
-		if (bTempID != bID && (bTempID == 0 || bTempID == 76)) {
-			bTemp.setTypeId(bID);
-		}
-		
-		// Call this method recursively for all qualifying blocks all around the target block
-		// NORTH, SOUTH, EAST and WEST only.
 		for (int i=0; i<=3; i++) {
 			bFace = bFaces[i];
-			bTemp = bTarget.getRelative(bFace);
-			bTempID = bTemp.getTypeId();
+			tempBlock = b.getRelative(bFace);
+			tempBlockID = tempBlock.getTypeId();
 			
-			// Only call recursively if the block in that direction is the appropriate type
-			// ...and the block ABOVE that block has not already been set to the target type
-			// (air or a powered redstone torch)
-			if (bTempID == GridBlockID && bTemp.getRelative(BlockFace.UP).getTypeId() != bID) {
-				toggleTorch(bTemp, bID); 
-			}
+			if (tempBlockID == 55) { return true; }
 		}
+		return false;
 	}
 }
