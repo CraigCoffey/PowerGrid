@@ -7,6 +7,14 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
+/**
+ * PowerGrid
+ * 
+ * @author Craig Coffey (aka. Heccubus)
+ * @version 0.5
+ *
+ */
+
 public class PowerGrid extends JavaPlugin{
 
 	protected static Configuration CONFIG;	
