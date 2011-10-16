@@ -47,11 +47,11 @@ public class RedstoneListener extends BlockListener {
 
 		// If the torch is un-powered, then set the target type to AIR, otherwise set it to a powered torch
 		if (gridPowerBlockID == 75) { targetPowerBlockID = 0; } else { targetPowerBlockID = 76; }
-
+		
 		// Toggle the base power grid block
 		if (gridBaseBlockID == GridOffBlockID) { targetBaseBlockID = GridOnBlockID; }
 		if (gridBaseBlockID == GridOnBlockID) { targetBaseBlockID = GridOffBlockID; }
-
+		
 		// If the base block is of the correct type, and the power block is too... then start the recursion.
 		if ((gridBaseBlockID == GridOffBlockID && gridPowerBlockID == 76) || (gridBaseBlockID == GridOnBlockID && gridPowerBlockID == 75)) {
 			toggleTorch(gridBaseBlock, targetBaseBlockID, targetPowerBlockID);
@@ -79,10 +79,10 @@ public class RedstoneListener extends BlockListener {
 				tempBlockID = tempBlock.getTypeId();
 
 				// If the current block is a powered or un-powered redstone torch, or air...
-				if (tempBlockID == 0 || tempBlockID == 75 || tempBlockID == 76) {
+				if ( (gpbID!=0 && (tempBlockID == 0 || tempBlockID == 75)) || (gpbID!=76 && tempBlockID == 76) ) {
 					
 					// If the base block is not near a redstone wire, set the target block to the proper type.
-					if (!nearRedstoneWire(targetBaseBlock)) { tempBlock.setTypeId(gpbID); }
+					if (!nearGridBlocks(tempBlock)) { tempBlock.setTypeId(gpbID); }
 
 					// Update the temp block ID variable now that it may have changed.
 					tempBlockID = tempBlock.getTypeId();
@@ -113,19 +113,12 @@ public class RedstoneListener extends BlockListener {
 		}
 	}
 
-	private boolean nearRedstoneWire(Block b) {
-		Block tempBlock = null;
-		int tempBlockID = -1;
-		BlockFace bFaces[] = BlockFace.values();
-		BlockFace bFace = null;
+	private boolean nearGridBlocks(Block b) {
+		Block tempBlock = b.getRelative(BlockFace.UP);
+		int tempBlockID = tempBlock.getTypeId();
 
-		for (int i=0; i<=3; i++) {
-			bFace = bFaces[i];
-			tempBlock = b.getRelative(bFace);
-			tempBlockID = tempBlock.getTypeId();
-			
-			if (tempBlockID == 55) { return true; }
-		}
+		if (tempBlockID == GridOffBlockID || tempBlockID == GridOnBlockID) { return true; }
 		return false;
 	}
+	
 }
