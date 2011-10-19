@@ -15,7 +15,7 @@ import org.bukkit.util.config.Configuration;
  *
  */
 
-public class PowerGrid extends JavaPlugin{
+public class PowerGrid extends JavaPlugin {
 
 	protected static Configuration CONFIG;	
 	Logger log = Logger.getLogger("Minecraft");

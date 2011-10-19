@@ -1,6 +1,8 @@
 package me.heccubus.PowerGrid;
 
 import java.util.logging.Logger;
+
+import org.bukkit.DyeColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -51,6 +53,12 @@ public class RedstoneListener extends BlockListener {
 		// Toggle the base power grid block
 		if (gridBaseBlockID == GridOffBlockID) { targetBaseBlockID = GridOnBlockID; }
 		if (gridBaseBlockID == GridOnBlockID) { targetBaseBlockID = GridOffBlockID; }
+		
+		if (gridBaseBlockID == 35) {
+			BlockState state = gridBaseBlock.getState();
+			DyeColor dc = ((org.bukkit.material.Wool)state.getData()).getColor();
+			log.info("Dye Color: " + dc);
+		}
 		
 		// If the base block is of the correct type, and the power block is too... then start the recursion.
 		if ((gridBaseBlockID == GridOffBlockID && gridPowerBlockID == 76) || (gridBaseBlockID == GridOnBlockID && gridPowerBlockID == 75)) {
