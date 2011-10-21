@@ -27,10 +27,10 @@ public class PowerGrid extends JavaPlugin {
 		
 		CONFIG = getConfiguration();
 		CONFIG.load();
-		int GridOffBlockID = CONFIG.getInt("GridOffBlockID", -1);
-		if (GridOffBlockID == -1) {
-			CONFIG.setProperty("GridOffBlockID", 22);
-			CONFIG.setProperty("GridOnBlockID", 41);
+		String GridOffColor = CONFIG.getString("GridOffColor", "");
+		if (GridOffColor.equals("")) {
+			CONFIG.setProperty("GridOffColor", "WHITE");
+			CONFIG.setProperty("GridOnColor", "YELLOW");
 			CONFIG.setProperty("MaxGridSize", 1000);
 			CONFIG.save();
 		}
